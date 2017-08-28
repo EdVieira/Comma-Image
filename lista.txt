@@ -1,0 +1,4 @@
+1.jpg
+file.jpeg
+test.jpeg.jpeg
+resized.jpeg

@@ -1,0 +1,3 @@
+xadrez.csv
+file.csv
+resized.csv
