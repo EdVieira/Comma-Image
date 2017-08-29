@@ -23,14 +23,21 @@ from StringIO import StringIO
 from numpy import genfromtxt
 from io import BytesIO
 
+def RGBAtoRGB(img,ext="jpg"):
+    fill_color = 'WHITE'  # your background
+    if img.mode in ('RGBA', 'LA') and ext not in ('png','tiff'):
+        background = Image.new(img.mode[:-1], img.size, fill_color)
+        background.paste(img, img.split()[-1])
+        img = background.convert('RGB')
+    return img
+
 def imgToCsv(img, file = False):
     print "Converting image to CSV"
     print "hold on a sec..."
     if file:
         img=Image.open(img)
-        imgarray=numpy.array(img)
-    else:
-        imgarray=numpy.array(img)
+    img = RGBAtoRGB(img)
+    imgarray=numpy.array(img)
     fullstring = ""
     for row in imgarray:
         outputstring=""
@@ -115,111 +122,74 @@ def saveImg(imgName, img):
     print imgName+' saved'
     return img
 
-def convertFileToCsv(filePath,f_output):
+def convertFileToCsv(filePath, f_output, save = False):
     csv = imgToCsv(filePath,True)
+    if save:
+        csv = saveCsv(f_output,csv)
     return csv
 
-def convertFileToCsvSave(filePath,f_output):
-    csv = imgToCsv(filePath,True)
-    csv = saveCsv(f_output,csv)
-    return csv
-
-def convertFileToImg(filePath,f_output):
+def convertFileToImg(filePath, f_output, save = False):
     img = csvToImg(filePath,True)
+    if save:
+        img = saveCsv(f_output,img)
     return img
 
-def convertFileToImgSave(filePath,f_output):
-    img = csvToImg(filePath,True)
-    img = saveImg(f_output,img)
-    return img
-
-def resizeFileCsvToImg(filePath, xy,f_output):
+def resizeFileCsvToImg(filePath, xy, f_output, save = False):
     shape = (int(xy[0]),int(xy[1]))
     img = csvToImg(filePath,True)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
+    if save:
+        img = saveImg(f_output,img)
     return img
 
-def resizeFileCsvToImgSave(filePath, xy,f_output):
-    shape = (int(xy[0]),int(xy[1]))
-    img = csvToImg(filePath,True)
-    img = img.resize(shape, Image.ANTIALIAS)
-    img = saveImg(f_output,img)
-    return img
-
-def resizeFileImgToCsv(filePath, xy,f_output):
+def resizeFileImgToCsv(filePath, xy, f_output, save = False):
     shape = (int(xy[0]),int(xy[1]))
     img = csvToImg(filePath, True)
-    img = img.resize(shape, Image.ANTIALIAS)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
     csv = imgToCsv(img)
+    if save:
+        csv = saveCsv(f_output,img)
     return csv
 
-def resizeFileImgToCsvSave(filePath, xy,f_output):
-    shape = (int(xy[0]),int(xy[1]))
-    img = csvToImg(filePath, True)
-    img = img.resize(shape, Image.ANTIALIAS)
-    img = img.resize(shape, Image.ANTIALIAS)
-    csv = imgToCsv(img)
-    csv = saveCsv(f_output,img)
-    return csv
-
-def resizeFileImg(filePath, xy,f_output):
+def resizeFileImg(filePath, xy,f_output, save = False):
     shape = (int(xy[0]),int(xy[1]))
     csv = imgToCsv(filePath,True)
     img = csvToImg(csv)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
+    if save:
+        img = saveImg(f_output,img)
     return img
 
-def resizeFileImgSave(filePath, xy,f_output):
-    shape = (int(xy[0]),int(xy[1]))
-    csv = imgToCsv(filePath,True)
-    img = csvToImg(csv)
-    img = img.resize(shape, Image.ANTIALIAS)
-    img = saveImg(f_output,img)
-    return img
-
-def resizeFileCsv(filePath, xy,f_output):
+def resizeFileCsv(filePath, xy,f_output, save = False):
     shape = (int(xy[0]),int(xy[1]))
     img = csvToImg(filePath,True)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = resizeImg(img, xy)
     csv = imgToCsv(img)
+    if save:
+        csv = saveCsv(f_output,img)
     return img
-
-def resizeFileCsvSave(filePath, xy,f_output):
-    shape = (int(xy[0]),int(xy[1]))
-    img = csvToImg(filePath,True)
-    img = img.resize(shape, Image.ANTIALIAS)
-    csv = imgToCsv(img)
-    csv = saveCsv(f_output,img)
-    return img
-
-def convertToCsv(img):
-    return imgToCsv(img)
-
-def convertToImg(csv):
-    return csvToImg(csv)
 
 def resizeCsvToImg(csv, xy):
     shape = (int(xy[0]),int(xy[1]))
     img = csvToImg(csv)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
     return img
 
 def resizeImgToCsv(img, xy):
     shape = (int(xy[0]),int(xy[1]))
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
     csv = imgToCsv(img)
     return csv
 
 def resizeImg(img, xy):
     shape = (int(xy[0]),int(xy[1]))
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = img.resize(xy, Image.ANTIALIAS)
     return img
 
 def resizeCsv(csv, xy):
     shape = (int(xy[0]), int(xy[1]))
-    img = convertToImg(csv)
-    img = img.resize(shape, Image.ANTIALIAS)
+    img = csvToImg(csv)
+    img = img.resize(xy, Image.ANTIALIAS)
     csv = imgToCsv(img)
     return csv
 
@@ -248,6 +218,18 @@ def getImgFilesFromTxtList(filePath):
 		l.append(img)
 	return l
 
+def imgListToCsvList(imgList):
+    l = []
+    for i in xrange(len(imgList)):
+        l.append(imgToCsv(imgList[i]))
+    return l
+
+def csvListToImgList(csvList):
+    l = []
+    for i in csvList:
+        l.append(csvToImg(i))
+    return l
+
 def resizeImgList(imgList, xy):
 	l = []
 	for i in imgList:
@@ -257,9 +239,18 @@ def resizeImgList(imgList, xy):
 def resizeCsvList(csvList, xy):
 	l = []
 	for i in csvList:
-		print len(i)
 		l.append(resizeCsv(i,xy))
 	return l
+
+def saveImgList(imgList, filePath, ext):
+    for i in xrange(len(imgList)):
+        saveImg(filePath+"/"+str(i)+"."+ext, RGBAtoRGB(imgList[i],ext))
+    return imgList
+
+def saveCsvList(csvList, filePath):
+    for i in xrange(len(csvList)):
+        saveCsv(filePath+"/"+str(i)+".csv", csvList[i])
+    return csvList
 """
 
 filePath = "".join(sys.argv[1])
