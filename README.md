@@ -1,3 +1,3 @@
 # Comma-Image
 
-Comma-Image is a CSV / Image converter + resizing tool for multiple files operation.
+Comma-Image is a CSV / Image converter + resizing command line tool for multiple files operation.
